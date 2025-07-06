@@ -3,7 +3,7 @@ from streamlit_option_menu import option_menu
 import matplotlib
 matplotlib.use('Agg')
 
-st.set_page_config(page_title="Аналитика газа", page_icon="🦢", layout="wide")
+st.set_page_config(page_title="Аналитика газа", page_icon="🛠", layout="wide")
 st.sidebar.image("img/methanol.png", width=200)
 
 with st.sidebar:
@@ -37,7 +37,8 @@ elif selected == "Гидравлика":
     gidravlika.run_hydraulic_calc()
 
 elif selected == "Метанол":
-    st.title("💧 Расчет потребления метанола")
+    import methanol
+    methanol.run_methanol_calc()
 
 elif selected == "Отчеты":
     st.title("✅ Отчеты")
