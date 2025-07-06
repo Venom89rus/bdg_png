@@ -4,7 +4,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 st.set_page_config(page_title="Аналитика газа", page_icon="🛠", layout="wide")
-st.sidebar.image("img/methanol.png", width=200)
+st.sidebar.image("img/logo.png", width=150, )
 
 with st.sidebar:
     selected = option_menu(
