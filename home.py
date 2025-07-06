@@ -33,6 +33,8 @@ elif selected == "Аналитика":
 
 elif selected == "Гидравлика":
     st.title("💻 Гидравлические расчеты")
+    import gidravlika
+    gidravlika.run_hydraulic_calc()
 
 elif selected == "Метанол":
     st.title("💧 Расчет потребления метанола")
