@@ -49,7 +49,6 @@ elif selected == "Аналитика":
     analitika.run_analytics()
 
 elif selected == "Гидравлика":
-    st.title("💻 Гидравлические расчеты")
     import gidravlika
     gidravlika.run_hydraulic_calc()
 
