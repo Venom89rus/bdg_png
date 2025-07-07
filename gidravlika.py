@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 @st.cache_data
 def load_data():
-    return pd.read_excel("pipe.xlsx", sheet_name="Лист1")
+    return pd.read_excel("Pipe_size.xlsx", sheet_name="Лист1")
 
 def run_hydraulic_calc():
     st.title("🔧 Гидравлический расчет трубопровода")
@@ -12,7 +12,7 @@ def run_hydraulic_calc():
     df = load_data()
 
     # Очистка данных и исправление названий столбцов
-    df = df.dropna(subset=["Регион", "Месторождение ", "Наименование ", "Начало"])
+    df = df.dropna(subset=["Регион", "Месторождение ", "Объект подготовки", "Начало "])
 
     # Фильтры по данным
     region = st.selectbox("Выберите регион:", df["Регион"].unique())
@@ -21,11 +21,11 @@ def run_hydraulic_calc():
     field = st.selectbox("Выберите месторождение:", df_region["Месторождение "].unique())
     df_field = df_region[df_region["Месторождение "] == field]
 
-    plant = st.selectbox("Выберите объект подготовки:", df_field["Наименование "].unique())
-    df_plant = df_field[df_field["Наименование "] == plant]
+    plant = st.selectbox("Выберите объект подготовки:", df_field["Объект подготовки"].unique())
+    df_plant = df_field[df_field["Объект подготовки"] == plant]
 
-    start_point = st.selectbox("Выберите начало участка:", df_plant["Начало"].unique())
-    pipe_row = df_plant[df_plant["Начало"] == start_point]
+    start_point = st.selectbox("Выберите начало участка:", df_plant["Начало "].unique())
+    pipe_row = df_plant[df_plant["Начало "] == start_point]
 
     # Отображение характеристик трубы
     st.subheader("📌 Характеристики трубы:")
