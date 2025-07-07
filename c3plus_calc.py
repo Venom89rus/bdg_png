@@ -1,5 +1,6 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def run():
     df = st.session_state.get("filtered_df", None)
@@ -30,7 +31,7 @@ def run():
 
     Vm = 0.022414  # м³/моль — молярный объем при н.у.
 
-    # Корректный расчет: переводим мольные % в доли, затем пересчет в г/м³
+    # Расчет С₃+в. в г/м³
     for comp in components:
         df[comp + "_g_m3"] = df[comp] / 100 * molar_masses[comp] / Vm
 
@@ -43,15 +44,24 @@ def run():
     col2.metric("Максимум", f"{df['С3+в.'].max():.2f} г/м³")
     col3.metric("Минимум", f"{df['С3+в.'].min():.2f} г/м³")
 
-    # График
-    df = df.reset_index(drop=True)
-    df["Отбор"] = df.index + 1
+    # Гистограмма по диапазонам содержания С₃+в.
+    st.markdown("### 📊 Распределение по диапазонам С₃+в. (г/м³)")
+
+    # Диапазоны (можно изменить под характерные значения)
+    bins = [0, 100, 200, 300, 400, 500, 600, 800, 1000, 1300, 1500]
+    labels = [f"{bins[i]}–{bins[i+1]}" for i in range(len(bins) - 1)]
+    df["С3+в._range"] = pd.cut(df["С3+в."], bins=bins, labels=labels, include_lowest=True)
+
+    s3plus_counts = df["С3+в._range"].value_counts().sort_index()
+    s3plus_counts = s3plus_counts[s3plus_counts > 0]  # удаляем пустые диапазоны
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.bar(df["Отбор"], df["С3+в."], color='orange')
-    ax.set_title("Содержание С₃+в. (г/м³) по отборам")
-    ax.set_xlabel("№ отбора")
-    ax.set_ylabel("С₃+в., г/м³")
+    ax.barh(s3plus_counts.index.astype(str), s3plus_counts.values, color='orange')
+    ax.set_xlabel("Количество отборов")
+    ax.set_ylabel("Диапазон С₃+в., г/м³")
+    ax.set_title("Распределение С₃+в. по диапазонам")
+    for i, v in enumerate(s3plus_counts.values):
+        ax.text(v + 0.5, i, str(v), va='center', fontsize=9)
     st.pyplot(fig)
 
     # Таблица
