@@ -1,5 +1,6 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+import pandas as pd  # Обязательно подключаем pandas
 
 def run():
     df = st.session_state.get("filtered_df", None)
@@ -14,12 +15,26 @@ def run():
         st.warning("Компонент CH₄ не найден в данных.")
         return
 
-    # График
+    # График: распределение содержания метана по диапазонам
+    st.markdown("### 📊 Распределение содержания CH₄ по диапазонам (%)")
+
+    # Определяем диапазоны
+    bins = [0, 20, 40, 60, 70, 80, 90, 100]
+    labels = [f"{bins[i]}–{bins[i+1]}" for i in range(len(bins) - 1)]
+    df['CH4_range'] = pd.cut(df["Метан"], bins=bins, labels=labels, include_lowest=True)
+
+    # Группировка и фильтрация
+    ch4_counts = df['CH4_range'].value_counts().sort_index()
+    ch4_counts = ch4_counts[ch4_counts > 0]  # убираем диапазоны без данных
+
+    # Построение графика
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(df.index, df["Метан"], marker='o', linestyle='-', color='green')
-    ax.set_title("Содержание СН₄")
-    ax.set_xlabel("Индекс")
-    ax.set_ylabel("CH₄, %")
+    ax.barh(ch4_counts.index.astype(str), ch4_counts.values, color='blue')
+    ax.set_xlabel("Количество отборов")
+    ax.set_ylabel("Диапазон содержания CH₄, %")
+    ax.set_title("Распределение содержания метана по диапазонам")
+    for i, v in enumerate(ch4_counts.values):
+        ax.text(v + 0.5, i, str(v), va='center', fontsize=9)
     st.pyplot(fig)
 
     # Статистика
