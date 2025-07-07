@@ -2,11 +2,28 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 import matplotlib
 matplotlib.use('Agg')
+import base64
 
+# Настройки страницы
 st.set_page_config(page_title="Аналитика газа", page_icon="🛠", layout="wide")
-st.sidebar.image("img/logo.png", width=150, )
+
+# Функция для кодирования изображения в base64
+def get_image_as_base64(path):
+    with open(path, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+logo_base64 = get_image_as_base64("img/logo.png")
 
 with st.sidebar:
+    st.markdown(
+        f"""
+        <div style="text-align: center;">
+            <img src="data:image/png;base64,{logo_base64}" width="100">
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     selected = option_menu(
         menu_title="Навигация",
         options=["Главная", "Аналитика", "Гидравлика", "Метанол", "Отчеты", "Контакты"],
