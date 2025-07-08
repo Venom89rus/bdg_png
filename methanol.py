@@ -8,6 +8,9 @@ from io import BytesIO                      # для хранения файла
 import xlsxwriter                           # экспорт Excel
 
 def run_methanol_calc():
+    # Установка ширины страницы на всю ширину экрана
+    st.set_page_config(layout="wide")
+
     # --- Ввод ключа OpenWeatherMap ---
     st.sidebar.subheader("Погода")
     weather_api_key = st.sidebar.text_input("Введите API ключ OpenWeatherMap",
