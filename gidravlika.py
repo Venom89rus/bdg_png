@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 @st.cache_data
 def load_data():
-    return pd.read_excel("Pipe_size.xlsx", sheet_name="Лист1")
+    return pd.read_excel("pipe.xlsx", sheet_name="Лист1")
 
 def run_hydraulic_calc():
     st.title("🔧 Гидравлический расчет трубопровода")
