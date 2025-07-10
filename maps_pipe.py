@@ -12,15 +12,14 @@ common_point = [63.300, 75.500]
 
 # Названия веток, координаты и цвета
 pipeline_data = [
-    {"name": "ДНС Пограничное м/р", "start": [63.250, 75.450], "color": "blue"},
-    {"name": "ДНС-3 Холмогорское м/р", "start": [63.310, 75.400], "color": "blue"},
-    {"name": "ДНС-4 Холмогорское м/р", "start": [63.280, 75.500], "color": "blue"},
-    {"name": "ДНС-1 Холмогорское м/р", "start": [63.220, 75.550], "color": "blue"},
+    {"name": "Ветка 1", "start": [63.250, 75.450], "color": "blue"},
+    {"name": "Ветка 2", "start": [63.310, 75.400], "color": "green"},
+    {"name": "Ветка 3", "start": [63.280, 75.600], "color": "orange"},
 ]
 
 # Мультивыбор фильтра
 all_names = [pipe["name"] for pipe in pipeline_data]
-selected_names = st.multiselect("Выберите отображаемые объекты", all_names, default=all_names)
+selected_names = st.multiselect("Выберите отображаемые ветки", all_names, default=all_names)
 
 # Фильтруем только выбранные ветки
 selected_pipelines = [pipe for pipe in pipeline_data if pipe["name"] in selected_names]
@@ -67,7 +66,7 @@ for pipe in selected_pipelines:
 # Маркер в точке соединения
 folium.Marker(
     location=common_point,
-    tooltip="Холмогорская КС",
+    tooltip="Узел соединения",
     icon=folium.Icon(color="red", icon="glyphicon glyphicon-map-marker")
 ).add_to(m)
 
