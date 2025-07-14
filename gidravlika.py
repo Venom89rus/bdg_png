@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 @st.cache_data
 def load_data():
-    return pd.read_excel("pipe.xlsx", sheet_name="Лист1")
+    return pd.read_excel("pipe.xlsx", sheet_name="pipe")
 
 def run_hydraulic_calc():
     st.title("🔧 Гидравлический расчет трубопровода")
@@ -12,7 +12,7 @@ def run_hydraulic_calc():
     df = load_data()
 
     # Очистка данных и исправление названий столбцов
-    df = df.dropna(subset=["Регион", "Месторождение ", "Объект подготовки", "Начало "])
+    df = df.dropna(subset=["Регион", "Месторождение ", "Участок"])
 
     # Фильтры по данным
     region = st.selectbox("Выберите регион:", df["Регион"].unique())
@@ -21,16 +21,16 @@ def run_hydraulic_calc():
     field = st.selectbox("Выберите месторождение:", df_region["Месторождение "].unique())
     df_field = df_region[df_region["Месторождение "] == field]
 
-    plant = st.selectbox("Выберите объект подготовки:", df_field["Объект подготовки"].unique())
-    df_plant = df_field[df_field["Объект подготовки"] == plant]
+    plant = st.selectbox("Выберите объект подготовки:", df_field["Участок"].unique())
+    df_plant = df_field[df_field["Участок"] == plant]
 
-    start_point = st.selectbox("Выберите начало участка:", df_plant["Начало "].unique())
-    pipe_row = df_plant[df_plant["Начало "] == start_point]
+    # start_point = st.selectbox("Выберите начало участка:", df_plant["Начало "].unique())
+    pipe_row = df_plant[df_plant["Участок"] == plant]
 
     # Отображение характеристик трубы
     st.subheader("📌 Характеристики трубы:")
-    length = pipe_row["Протяженность"].values[0]
-    diameter = pipe_row["Диаметр коллектора"].values[0]
+    length = pipe_row["Протяженность "].values[0]
+    diameter = pipe_row["Диаметр внешний"].values[0]
     thickness = pipe_row["Толщина стенки"].values[0]
     st.markdown(f"- Протяженность: **{length} м**")
     st.markdown(f"- Диаметр: **{diameter} мм**")
@@ -41,8 +41,8 @@ def run_hydraulic_calc():
     pressure = st.number_input("Давление газа (МПа)", min_value=0.7)
     flow = st.number_input("Расход газа (тыс. м³/сут)", min_value=100)
     t_gas = st.number_input("Температура газа (°C)", min_value=30.0)
-    t_soil = st.number_input("Температура грунта (°C)", min_value=-5.0)
-    humidity = st.number_input("Содержание влаги (%)", min_value=0.02)
+    t_soil = st.number_input("Температура грунта (°C)", min_value=-2.0)
+    humidity = st.number_input("Содержание влаги (% mol)", min_value=0.02)
     density = st.number_input("Плотность газа (кг/м³)", min_value=0.9)
 
     st.divider()
