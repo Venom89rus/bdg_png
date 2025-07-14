@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import folium
 from streamlit_folium import st_folium
 from folium import Element
@@ -7,39 +8,58 @@ from geopy.distance import geodesic
 st.set_page_config(layout="wide")
 st.title("Схема трубопроводов с точкой соединения и фильтрацией")
 
-# Общая точка соединения
-common_point = [63.300, 75.500]
+# ===== Загрузка данных =====
+uploaded_file = "pipe.xlsx"  # Путь к файлу
+sheet_options = ["ХКЦ", "МГПЗ", "ВГПЗ", "ВяКЦ", "ОГМ", "ВТГМ"]
 
-# Названия веток, координаты и цвета
-pipeline_data = [
-    {"name": "Ветка 1", "start": [63.250, 75.450], "color": "blue"},
-    {"name": "Ветка 2", "start": [63.310, 75.400], "color": "green"},
-    {"name": "Ветка 3", "start": [63.280, 75.600], "color": "orange"},
-]
+selected_sheet = st.selectbox("Выберите участок (вкладку):", sheet_options)
 
-# Мультивыбор фильтра
+@st.cache_data
+def load_pipeline_data(sheet_name):
+    df = pd.read_excel(uploaded_file, sheet_name=sheet_name, skiprows=2)
+    columns = df.columns
+    route_names = [columns[i] for i in range(0, len(columns), 2)]
+
+    colors = ["blue", "green", "orange", "purple", "gray", "black", "red"]
+
+    pipeline_data = []
+
+    for idx, name in enumerate(route_names):
+        lat_col = columns[idx * 2]
+        lon_col = columns[idx * 2 + 1]
+
+        coords = df[[lat_col, lon_col]].dropna()
+        path = list(zip(coords[lat_col], coords[lon_col]))
+
+        if path:
+            pipeline_data.append({
+                "name": name,
+                "path": path,
+                "start": path[0],
+                "color": colors[idx % len(colors)]
+            })
+
+    # Общая точка соединения — конец последнего маршрута
+    common_point = pipeline_data[-1]["path"][-1] if pipeline_data else [63.300, 75.500]
+    return pipeline_data, common_point
+
+pipeline_data, common_point = load_pipeline_data(selected_sheet)
+
+# ===== Интерфейс фильтрации =====
 all_names = [pipe["name"] for pipe in pipeline_data]
 selected_names = st.multiselect("Выберите отображаемые ветки", all_names, default=all_names)
-
-# Фильтруем только выбранные ветки
 selected_pipelines = [pipe for pipe in pipeline_data if pipe["name"] in selected_names]
 
-# Расчёт протяжённости
-def calculate_total_length_km(pipes):
-    return round(sum(geodesic(pipe["start"], common_point).km for pipe in pipes), 2)
+# ===== Расчёт протяжённости =====
+def calculate_length(path):
+    return sum(geodesic(path[i], path[i + 1]).km for i in range(len(path) - 1))
 
-total_length = calculate_total_length_km(selected_pipelines)
+total_length = round(sum(calculate_length(pipe["path"]) for pipe in selected_pipelines), 2)
 st.markdown(f"**Протяжённость выбранных веток:** {total_length} км")
 
-# Создание карты
-m = folium.Map(
-    location=common_point,
-    zoom_start=10,
-    tiles=None,
-    control_scale=True
-)
+# ===== Создание карты =====
+m = folium.Map(location=common_point, zoom_start=10, tiles=None, control_scale=True)
 
-# Чистый фон без флага
 folium.TileLayer(
     tiles='https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
     attr=' ',
@@ -47,10 +67,9 @@ folium.TileLayer(
     control=False
 ).add_to(m)
 
-# Добавление выбранных веток
 for pipe in selected_pipelines:
     folium.PolyLine(
-        locations=[pipe["start"], common_point],
+        locations=pipe["path"],
         color=pipe["color"],
         weight=5,
         opacity=0.8,
@@ -63,14 +82,13 @@ for pipe in selected_pipelines:
         icon=folium.Icon(color=pipe["color"])
     ).add_to(m)
 
-# Маркер в точке соединения
+# Узел соединения
 folium.Marker(
     location=common_point,
     tooltip="Узел соединения",
     icon=folium.Icon(color="red", icon="glyphicon glyphicon-map-marker")
 ).add_to(m)
 
-# CSS для скрытия флага/атрибуции
 css_hide = Element("""
     <style>
     .leaflet-control-attribution {
@@ -80,5 +98,5 @@ css_hide = Element("""
 """)
 m.get_root().html.add_child(css_hide)
 
-# Отображение карты
+# ===== Отображение карты =====
 st_folium(m, width=1200, height=700)

@@ -1,40 +1,33 @@
 import pandas as pd
 
-# Общая точка соединения
-common_point_nsk = [63.300, 75.500]
+# Загружаем таблицу
+df = pd.read_excel("pipe.xlsx", sheet_name="ХКЦ", skiprows=2)
 
-# Загружаем координаты ветки 1 из Excel
-df = pd.read_excel("coords_nsk.xlsx")
-path_from_excel = df[["Latitude", "Longitude"]].values.tolist()
+# Названия маршрутов (шапка таблицы, шаг 2 колонки)
+column_names = df.columns
+route_names = [column_names[i] for i in range(0, len(column_names), 2)]
 
-# Добавляем точку соединения в конец маршрута
-path_from_excel.append(common_point_nsk)
+# Преобразуем в pipeline_data
+pipeline_data = []
+colors = ["blue", "green", "orange", "purple", "gray", "black", "red"]
 
-# Обновлённый pipeline_data_nsk
-pipeline_data_nsk = [
-    {
-        "name": "Ветка 1",
-        "path": path_from_excel,
-        "color": "blue"
-    },
-    {
-        "name": "Ветка 2",
-        "path": [
-            [63.310, 75.400],
-            [63.305, 75.430],
-            [63.302, 75.460],
-            common_point_nsk
-        ],
-        "color": "green"
-    },
-    {
-        "name": "Ветка 3",
-        "path": [
-            [63.280, 75.600],
-            [63.290, 75.570],
-            [63.295, 75.530],
-            common_point_nsk
-        ],
-        "color": "orange"
-    }
-]
+for idx, name in enumerate(route_names):
+    lat_col = column_names[idx * 2]
+    lon_col = column_names[idx * 2 + 1]
+    coords = df[[lat_col, lon_col]].dropna()
+    path = list(zip(coords[lat_col], coords[lon_col]))
+
+    if path:
+        pipeline_data.append({
+            "name": name,
+            "path": path,
+            "color": colors[idx % len(colors)]
+        })
+
+# Общая точка соединения = конец последнего маршрута
+common_point = pipeline_data[-1]["path"][-1]
+
+# Сохраняем в файл
+with open("noyabrsk_region.py", "w", encoding="utf-8") as f:
+    f.write("pipeline_data = " + repr(pipeline_data) + "\n")
+    f.write("common_point = " + repr(common_point) + "\n")
